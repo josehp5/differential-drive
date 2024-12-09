@@ -91,5 +91,21 @@ public class Drive extends SubsystemBase {
   }
 
   private final SimpleMotorFeedforward feedforward = new SimpleMotorFeedforward(FF.kS, FF.kV);
+
+  private final PIDController leftPIDController = new PIDController(PID.kP, PID.kI, PID.kD);
+  private final PIDController rightPIDController = new PIDController(PID.kP, PID.kI, PID.kD);
+
+  public void drive(double leftSpeed, double rightSpeed) {
+    final double realLeftSpeed = leftSpeed * DriveConstants.MAX_SPEED;
+    final double realRightSpeed = rightSpeed * DriveConstants.MAX_SPEED;
+    
+      final double leftFeedforward = feedforward.calculate(realLeftSpeed);
+      final double rightFeedforward = feedforward.calculate(realRightSpeed);
+  
+      final double leftPID = 
+        leftPIDController.calculate(leftEncoder.getVelocity(), realLeftSpeed);
+      final double rightPID = 
+        rightPIDController.calculate(rightEncoder.getVelocity(), realRightSpeed);
+    }
 }
 
