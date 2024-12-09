@@ -1,0 +1,23 @@
+package robot.drive;
+
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
+
+public class DriveConstants extends SubsystemBase {
+
+public DriveConstants() { final double WHEEL_RADIUS = 0.08; //Meters
+    final double CIRCUMFERENCE = 2.0 * Math.PI * WHEEL_RADIUS;
+    final double GEARING = 8.0;
+    final double POSITION_FACTOR = CIRCUMFERENCE * GEARING;
+    final double VELOCITY_FACTOR = POSITION_FACTOR / 60.0;
+  }
+  public static final class FF {
+    public static final double kS = 1;
+    public static final double kV = 3;
+  }
+  public static final double MAX_SPEED = 2;
+
+  @Override
+  public void periodic() {
+    // This method will be called once per scheduler run
+  }
+}
