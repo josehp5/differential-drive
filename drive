@@ -1,0 +1,95 @@
+package robot.drive;
+
+import robot.drive.DriveConstants;
+import robot.Ports;
+import robot.Ports.AnalogGyro;
+
+import static robot.drive.DriveConstants.VELOCITY_FACTOR;
+
+import java.util.List;
+
+import org.junit.jupiter.api.extension.LifecycleMethodExecutionExceptionHandler;
+
+import com.revrobotics.CANSparkBase.IdleMode;
+
+import com.revrobotics.CANSparkBase;
+import com.revrobotics.CANSparkMax;
+import com.revrobotics.RelativeEncoder;
+import com.revrobotics.CANSparkLowLevel.MotorType;
+
+import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.motorcontrol.MotorController;
+import edu.wpi.first.wpilibj.motorcontrol.Spark;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
+  
+public class Drive extends SubsystemBase {
+  private final static CANSparkMax leftLeader = new CANSparkMax(Ports.Drive.LEFT_LEADER, MotorType.kBrushless);
+    public static RelativeEncoder leftEncoder;
+    public static RelativeEncoder rightEncoder;
+  private final CANSparkMax leftFollower = new CANSparkMax(Ports.Drive.LEFT_FOLLOWER, MotorType.kBrushless);
+  private final CANSparkMax rightFollower = new CANSparkMax(Ports.Drive.RIGHT_FOLLOWER, MotorType.kBrushless);
+  private final static CANSparkMax rightLeader = new CANSparkMax(Ports.Drive.RIGHT_LEADER, MotorType.kBrushless);
+  
+  
+  public Drive() {
+  for (CANSparkMax spark : List.of(leftLeader, leftFollower, rightLeader, rightFollower)) {
+    Spark.restoreFactoryDefaults();}
+    Spark.setIdleMode(com.revrobotics.CANSparkMax.IdleMode.kBrake);
+  rightFollower.follow(rightLeader);
+  leftFollower.follow(leftLeader);
+  leftLeader.setInverted(true);
+  }
+
+  private final DifferentialDriveOdometry odometry;{
+    odometry = new DifferentialDriveOdometry(
+     new Rotation2d(), 
+     0, 
+     0, 
+    new Pose2d());
+  }
+  
+  @Override
+  public void periodic() {
+    updateOdometry(gyro.getRotation2d());
+  }
+  
+  public static void drive(double leftSpeed, double rightSpeed) {
+    leftLeader.set(leftSpeed);
+    rightLeader.set(rightSpeed);
+  }
+
+  public class InnerDrive {
+      static{
+        leftEncoder.setPositionConversionFactor(DriveConstants.POSITION_FACTOR);
+        rightEncoder.setPositionConversionFactor(DriveConstants.POSITION_FACTOR);
+
+        leftEncoder.setVelocityConversionFactor(DriveConstants.VELOCITY_FACTOR);
+        rightEncoder.setVelocityConversionFactor(DriveConstants.VELOCITY_FACTOR);
+
+        leftEncoder.setPosition(0);
+        rightEncoder.setPosition(0);
+    }
+  }
+
+  private final AnalogGyro gyro = new AnalogGyro(Ports.GYRO_CHANNEL);
+    gyro.reset();
+
+  private void updateOdometry(Rotation2d rotation) {
+    odometry.update(rotation, leftEncoder.getPosition(), rightEncoder.getPosition());
+  }
+
+  private void resetOdometry() {
+    odometry.resetOdometry(new Pose2d(0, 0, new Rotation2d(0)));
+  }
+  
+  public Pose2d pose() {
+    return odometry.getPoseMeters();
+  }
+
+  private final SimpleMotorFeedforward feedforward = new SimpleMotorFeedforward(FF.kS, FF.kV);
+}
+
