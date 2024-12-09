@@ -18,6 +18,12 @@ public DriveConstants() { final double WHEEL_RADIUS = 0.08; //Meters
 
   @Override
   public void periodic() {
-    // This method will be called once per scheduler run
+    updateOdometry(gyro.getRotation2d());
+  }
+
+  public static final class PID {
+    public static final double kP = 8.5;
+    public static final double kI = 0.0;
+    public static final double kD = 0.0;
   }
 }
