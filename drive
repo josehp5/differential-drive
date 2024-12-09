@@ -8,8 +8,6 @@ import static robot.drive.DriveConstants.VELOCITY_FACTOR;
 
 import java.util.List;
 
-import org.junit.jupiter.api.extension.LifecycleMethodExecutionExceptionHandler;
-
 import com.revrobotics.CANSparkBase.IdleMode;
 
 import com.revrobotics.CANSparkBase;
